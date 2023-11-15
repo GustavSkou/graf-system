@@ -18,11 +18,11 @@ class tile {
 
 vector<tile> tiles;                             //vector(tiles) der skal indeholde objekterne fra tile classen
 
-void genKoordinatsystem(int size) {
+void genKoordinatsystem(float sizeX, float sizeY, double resolution) {
 
-    for(float y = 0; y < size; y=y+0.5) {
+    for(float y = 0; y < sizeY ; y = y + resolution) {
     
-        for(float x = 0; x < size; x=x+0.5) {
+        for(float x = 0; x < sizeX ; x = x + resolution) {
             float xkoordinat = x;
             float ykoordinat = y;
             string tegn = " . ";
@@ -33,10 +33,10 @@ void genKoordinatsystem(int size) {
     }
 }
 
-void sortKoordinatsystem(int size) {
-
+void sortKoordinatsystem(float sizeX, float sizeY, double resolution) {
+    
     float x = 0;
-    float y = size - 0.5;
+    float y = sizeY - resolution;
 
     for (int n = 0; n < tiles.size(); n++) {                        //swap nr 1
         
@@ -46,11 +46,11 @@ void sortKoordinatsystem(int size) {
 
                 swap (tiles[n], tiles[i] );
 
-                x = x + 0.5;    
+                x = x + resolution;    
                 
-                if (x == size) {                                    
+                if (x == sizeX) {                                    
                     x = 0;
-                    y = y - 0.5;    
+                    y = y - resolution;    
                 }
 
                 break;
@@ -59,11 +59,57 @@ void sortKoordinatsystem(int size) {
     }
 }  
 
-void streamKoordinatsystem(const int size) {                            // update koordinatsystem
+void koordakse(float sizeX, float sizeY, double resolution) {
+    
+    float i = (sizeX/resolution) * (sizeY/resolution) - (sizeX/resolution);
+
+    for (int n = i; n < tiles.size(); n++) {
+
+        float x = tiles[n].xAksen;
+
+        if (x - floor(x) != resolution) {
+            int roundX = round(x);
+
+            if (roundX>=10) {
+                tiles[n].tegn = " " + to_string(roundX) + "";
+            }
+
+            else {
+                tiles[n].tegn = " " + to_string(roundX) + " ";
+            }
+        }
+        else {
+            tiles[n].tegn = " - ";
+        }
+        
+    }
+
+    for (int n = i - sizeX/resolution; n+sizeX/resolution > 0; n = n - sizeX/resolution) {
+        float y = tiles[n].yAksen;
+
+        if (y - floor(y) != resolution) {
+            int roundY = round(y);
+
+            if (roundY>=10) {
+                tiles[n].tegn = " " + to_string(roundY) + "";
+            }
+
+            else {
+                tiles[n].tegn = " " + to_string(roundY) + " ";
+            }
+        }
+        else {
+            tiles[n].tegn = " | ";
+        }
+       
+    }
+}
+
+void streamKoordinatsystem(float sizeX, double resolution) {                            // update koordinatsystem
     
     for (int n = 0; n < tiles.size(); n++) {
 
-        if (tiles[n].xAksen == size-0.5) {
+        if (tiles[n].xAksen == sizeX-resolution) {
             
             //cout << "("<< tiles[n].xAksen << "," << tiles[n].yAksen << ")\n" ;
             cout << tiles[n].tegn << "\n";
@@ -76,33 +122,52 @@ void streamKoordinatsystem(const int size) {                            // updat
     }
 }
 
-void grafTegner(int size) {
+void grafTegner() {
     for (int n = 0; n < tiles.size(); n++) {
         float x = tiles[n].xAksen;
 
         float y = sin(x/2)+3; 
 
-        float yDeci = y - floor(y);
+        int floorY = floor(y);
+        float yDeci = y - floorY;
         
-        y = (0.25 <= yDeci && yDeci < 0.75) ? y = (y-yDeci) + (0.5 - yDeci + yDeci) :
-        y = (0.25 > yDeci)                  ? floor(y): 
-        y = ceil(y);
-        //cout << y << "\n";
+        y = (0.25 <= yDeci && yDeci < 0.75) ? y = floorY + 0.5 :    // rund op/ned til 0,5
+        y = (0.25 > yDeci)                  ? floorY:               // rund ned
+        y = ceil(y);                                                // rund op
 
         tiles[n].tegn = (tiles[n].yAksen == y) ? tiles[n].tegn = " X " : tiles[n].tegn = tiles[n].tegn;    
+    } 
+
+    for (int n = 0; n < tiles.size(); n++) {
+        double x = tiles[n].xAksen;
+
+        double y = 20*(1.0 / (sqrt(2.0*3.14) * 1.25) ) * exp(-0.5 * pow( (x-8.0) / 1.25, 2.0));
+
+        int floorY = floor(y);
+        float yDeci = y - floorY;
+        
+        y = (0.25 <= yDeci && yDeci < 0.75) ? y = floorY + 0.5 :    // rund op/ned til 0,5
+        y = (0.25 > yDeci)                  ? floorY:               // rund ned
+        y = ceil(y);                                                // rund op
+
+        tiles[n].tegn = (tiles[n].yAksen == y) ? tiles[n].tegn = " Y " : tiles[n].tegn = tiles[n].tegn;    
     } 
 }
 
 int main(){    
-    int size = 10;
+    float sizeX = 30.5;
+    float sizeY = 10.5;
+    double resolution = 0.5;
 
-    genKoordinatsystem(size);
+    genKoordinatsystem(sizeX, sizeY, resolution);
 
-    sortKoordinatsystem(size);
+    sortKoordinatsystem(sizeX, sizeY, resolution);
 
-    grafTegner(size*2);                   // skal tage en funktion som input
+    grafTegner();                   // skal tage en funktion som input
 
-    streamKoordinatsystem(size);
+    koordakse(sizeX, sizeY, resolution);
+
+    streamKoordinatsystem(sizeX, resolution);
 
     return 0;
 }
